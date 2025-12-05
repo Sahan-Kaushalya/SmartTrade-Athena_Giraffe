@@ -26,6 +26,7 @@ import java.util.Set;
 
 public class ProductService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MMMM dd");
+
     // make method for the load similar products data
     public String getSimilarProducts(int productId) {
         JsonObject responseObject = new JsonObject();
@@ -45,30 +46,35 @@ public class ProductService {
                 .getResultList();
 
         List<ProductDTO> productDTOList = new ArrayList<>();
-        for (Product p:productList){
-            ProductDTO productDTO = new ProductDTO();
-            productDTO.setProductId(p.getId());
-            productDTO.setTitle(p.getTitle());
-            productDTO.setColorId(p.getColor().getId());
-            productDTO.setColorValue(p.getColor().getValue());
-            productDTO.setStorageId(p.getStorage().getId());
-            productDTO.setStorageValue(p.getStorage().getValue());
-            productDTO.setImages(p.getImages());
-            List<StockDTO> stockDTOList = new ArrayList<>();
-            for (Stock stock : p.getStocks()) {
-                StockDTO stockDTO = new StockDTO();
-                stockDTO.setPrice(stock.getPrice());
-                stockDTOList.add(stockDTO);
-            }
-
-            productDTO.setStockDTOList(stockDTOList);
+        for (Product p : productList) {
+            ProductDTO productDTO = getProductDTO(p);
             productDTOList.add(productDTO);
         }
 
-        responseObject.add("similarProducts",AppUtil.GSON.toJsonTree(productDTOList));
+        responseObject.add("similarProducts", AppUtil.GSON.toJsonTree(productDTOList));
         hibernateSession.close();
 
         return AppUtil.GSON.toJson(responseObject);
+    }
+
+    private static ProductDTO getProductDTO(Product p) {
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setProductId(p.getId());
+        productDTO.setTitle(p.getTitle());
+        productDTO.setColorId(p.getColor().getId());
+        productDTO.setColorValue(p.getColor().getValue());
+        productDTO.setStorageId(p.getStorage().getId());
+        productDTO.setStorageValue(p.getStorage().getValue());
+        productDTO.setImages(p.getImages());
+        List<StockDTO> stockDTOList = new ArrayList<>();
+        for (Stock stock : p.getStocks()) {
+            StockDTO stockDTO = new StockDTO();
+            stockDTO.setPrice(stock.getPrice());
+            stockDTOList.add(stockDTO);
+        }
+
+        productDTO.setStockDTOList(stockDTOList);
+        return productDTO;
     }
 
     // make method fot the retrieve single product data
@@ -183,9 +189,8 @@ public class ProductService {
         } catch (HibernateException e) {
             transaction.rollback();
             message = "Product image uploading failed!";
-        } finally {
-            hibernateSession.close();
         }
+        hibernateSession.close();
         responseObject.addProperty("status", status);
         responseObject.addProperty("message", message);
         return AppUtil.GSON.toJson(responseObject);
