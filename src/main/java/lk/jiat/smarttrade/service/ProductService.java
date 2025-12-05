@@ -1,6 +1,8 @@
 package lk.jiat.smarttrade.service;
 
 import com.google.gson.JsonObject;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.core.Context;
@@ -12,6 +14,9 @@ import lk.jiat.smarttrade.util.HibernateUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.hibernate.query.criteria.JpaCriteriaQuery;
+import org.hibernate.query.criteria.JpaRoot;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -20,6 +25,52 @@ import java.util.List;
 import java.util.Set;
 
 public class ProductService {
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MMMM dd");
+    // make method for the load similar products data
+    public String getSimilarProducts(int productId) {
+        JsonObject responseObject = new JsonObject();
+
+        Session hibernateSession = HibernateUtil.getSessionFactory().openSession();
+        Product product = hibernateSession.find(Product.class, productId);
+
+        // load similar product data
+        List<Model> modelList = hibernateSession.createQuery("FROM Model m WHERE m.brand=:brand", Model.class)
+                .setParameter("brand", product.getModel().getBrand())
+                .getResultList();
+
+        // make sub query using same model and except loaded product
+        List<Product> productList = hibernateSession.createQuery("FROM Product p WHERE p.model IN :modelList AND p != :product", Product.class)
+                .setParameter("modelList", modelList)
+                .setParameter("product", product)
+                .getResultList();
+
+        List<ProductDTO> productDTOList = new ArrayList<>();
+        for (Product p:productList){
+            ProductDTO productDTO = new ProductDTO();
+            productDTO.setProductId(p.getId());
+            productDTO.setTitle(p.getTitle());
+            productDTO.setColorId(p.getColor().getId());
+            productDTO.setColorValue(p.getColor().getValue());
+            productDTO.setStorageId(p.getStorage().getId());
+            productDTO.setStorageValue(p.getStorage().getValue());
+            productDTO.setImages(p.getImages());
+            List<StockDTO> stockDTOList = new ArrayList<>();
+            for (Stock stock : p.getStocks()) {
+                StockDTO stockDTO = new StockDTO();
+                stockDTO.setPrice(stock.getPrice());
+                stockDTOList.add(stockDTO);
+            }
+
+            productDTO.setStockDTOList(stockDTOList);
+            productDTOList.add(productDTO);
+        }
+
+        responseObject.add("similarProducts",AppUtil.GSON.toJsonTree(productDTOList));
+        hibernateSession.close();
+
+        return AppUtil.GSON.toJson(responseObject);
+    }
+
     // make method fot the retrieve single product data
     public String getSingleProduct(int productId) {
         JsonObject responseObject = new JsonObject();
@@ -78,7 +129,6 @@ public class ProductService {
                     if (productSet.isEmpty()) {
                         message = "Products Not Found";
                     } else {
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MMMM dd");
                         List<ProductDTO> productDTOList = new ArrayList<>();
                         for (Product p : productSet) {
                             ProductDTO dto = new ProductDTO();
