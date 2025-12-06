@@ -11,6 +11,13 @@ import lk.jiat.smarttrade.service.ContentService;
 
 @Path("/data")
 public class ContentController {
+    @Path("product-data")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response loadProductData() {
+        String responseJson = new ContentService().loadProductData();
+        return Response.ok().entity(responseJson).build();
+    }
 
     @Path("/new-arrivals")
     @GET
