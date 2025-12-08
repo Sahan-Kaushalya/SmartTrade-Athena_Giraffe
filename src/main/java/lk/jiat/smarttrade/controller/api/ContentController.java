@@ -11,7 +11,7 @@ import lk.jiat.smarttrade.service.ContentService;
 
 @Path("/data")
 public class ContentController {
-    @Path("product-data")
+    @Path("/product-data")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response loadProductData() {

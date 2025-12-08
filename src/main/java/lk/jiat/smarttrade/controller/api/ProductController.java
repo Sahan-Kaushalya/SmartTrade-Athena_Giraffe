@@ -1,5 +1,6 @@
 package lk.jiat.smarttrade.controller.api;
 
+import com.google.gson.JsonObject;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.*;
@@ -22,6 +23,16 @@ import java.util.List;
 
 @Path("/products")
 public class ProductController {
+    @Path("/advanced-search")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response loadAdvancedSearchData(String requestData) {
+        JsonObject requestObject = AppUtil.GSON.fromJson(requestData, JsonObject.class);
+        String responseJson = new ProductService().loadAdvancedSearchData(requestObject);
+        return Response.ok().entity(responseJson).build();
+    }
+
     @Path("/similar-products")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

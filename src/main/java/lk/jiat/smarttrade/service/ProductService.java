@@ -1,8 +1,7 @@
 package lk.jiat.smarttrade.service;
 
 import com.google.gson.JsonObject;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.core.Context;
@@ -14,18 +13,115 @@ import lk.jiat.smarttrade.util.HibernateUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.hibernate.query.criteria.JpaRoot;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ProductService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MMMM dd");
+    private static final int MAX_RESULT = 6;
+
+    // make method for the advanced search mechanism
+    public String loadAdvancedSearchData(JsonObject requestObject) {
+        JsonObject responseObject = new JsonObject();
+        Session hibernateSession = HibernateUtil.getSessionFactory().openSession();
+
+        StringBuilder hql = new StringBuilder(
+                "SELECT s FROM Stock s " +
+                        "JOIN s.product p " +
+                        "LEFT JOIN p.model m " +
+                        "LEFT JOIN m.brand b " +
+                        "LEFT JOIN p.color c " +
+                        "LEFT JOIN p.quality q " +
+                        "LEFT JOIN p.storage st " +
+                        "WHERE 1=1 "
+        ); // methana WHERE 1=1 kiyala daganne passe query ekata ekathu karanna lesi wenna. always true condition
+        // ekak thamai set karala thiyenne
+        // methanin pahala tika JsonObject eke thiyena dewal aragena where ekata ekathu karanna hadanne
+        Map<String, Object> params = new HashMap<>();
+
+        if (requestObject.has("brandName")) {
+            hql.append(" AND b.name = :brandName ");
+            params.put("brandName", requestObject.get("brandName").getAsString());
+        }
+
+        if (requestObject.has("conditionName")) {
+            hql.append(" AND q.value = :quality ");
+            params.put("quality", requestObject.get("conditionName").getAsString());
+        }
+
+        if (requestObject.has("colorName")) {
+            hql.append(" AND c.value = :color ");
+            params.put("color", requestObject.get("colorName").getAsString());
+        }
+
+        if (requestObject.has("storageValue")) {
+            hql.append(" AND st.value = :storage ");
+            params.put("storage", requestObject.get("storageValue").getAsString());
+        }
+
+        if (requestObject.has("priceStart") && requestObject.has("priceEnd")) {
+            hql.append(" AND s.price BETWEEN :startPrice AND :endPrice ");
+            params.put("startPrice", requestObject.get("priceStart").getAsDouble());
+            params.put("endPrice", requestObject.get("priceEnd").getAsDouble());
+        }
+
+        hql.append(" AND s.status.value = :approvedStatus ");
+        params.put("approvedStatus", Status.Type.APPROVED.toString());
+        if (requestObject.has("sortValue")) {
+            String sortValue = requestObject.get("sortValue").getAsString();
+
+            switch (sortValue) {
+                case "Sort by Latest":
+                    hql.append(" ORDER BY s.id DESC ");
+                    break;
+                case "Sort by Oldest":
+                    hql.append(" ORDER BY s.id ASC ");
+                    break;
+                case "Sort by Name":
+                    hql.append(" ORDER BY p.title ASC ");
+                    break;
+                case "Sort by Price":
+                    hql.append(" ORDER BY s.price ASC ");
+                    break;
+            }
+        }
+        Query<Stock> query = hibernateSession.createQuery(hql.toString(), Stock.class);
+        params.forEach(query::setParameter);
+        if (requestObject.has("firstResult")) {
+            int first = requestObject.get("firstResult").getAsInt();
+            query.setFirstResult(first);
+            query.setMaxResults(ProductService.MAX_RESULT);
+        }
+        List<Stock> stockList = query.getResultList();
+        List<ProductDTO> productList = new ArrayList<>();
+        for(Stock s:stockList){
+            ProductDTO productDTO = new ProductDTO();
+            productDTO.setProductId(s.getProduct().getId());
+            productDTO.setTitle(s.getProduct().getTitle());
+            productDTO.setImages(s.getProduct().getImages());
+            productDTO.setPrice(s.getPrice());
+            productList.add(productDTO);
+        }
+        responseObject.add("productList", AppUtil.GSON.toJsonTree(productList));
+        String countHql = hql.toString().replace("SELECT s", "SELECT COUNT(s)");
+
+        Query<Long> countQuery = hibernateSession.createQuery(countHql, Long.class);
+
+        params.forEach(countQuery::setParameter);
+
+        long count = countQuery.getSingleResult();
+        responseObject.addProperty("allProductCount", count);
+
+
+        hibernateSession.close();
+
+        return AppUtil.GSON.toJson(responseObject);
+    }
 
     // make method for the load similar products data
     public String getSimilarProducts(int productId) {
