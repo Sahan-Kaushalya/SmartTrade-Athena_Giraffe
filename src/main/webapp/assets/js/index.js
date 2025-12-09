@@ -49,7 +49,7 @@ function renderingNewArrivals(productList) {
                                     <div class="product-hover-action">
                                         <ul class="cart-action">
                                             <li class="quickview"><a href="single-product.html?productId=${product.productId}"><i class="far fa-eye"></i></a></li>
-                                            <li class="select-option"><a href="#" onclick="addToCart(product.productId,1);">Add To Cart</a></li>
+                                            <li class="select-option"><a href="#" onclick="addToCart(${product.productId},1);">Add To Cart</a></li>
                                             <li class="wishlist"><a href="#"><i class="far fa-heart"></i></a></li>
                                         </ul>
                                     </div>
