@@ -5,13 +5,14 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import lk.jiat.smarttrade.annotation.IsUser;
 import lk.jiat.smarttrade.dto.CheckoutRequestDTO;
 import lk.jiat.smarttrade.service.CheckoutService;
 import lk.jiat.smarttrade.util.AppUtil;
 
 @Path("/checkout")
 public class CheckoutController {
-
+    @IsUser
     @GET
     @Path("/load-checkout-data")
     @Produces(MediaType.APPLICATION_JSON)

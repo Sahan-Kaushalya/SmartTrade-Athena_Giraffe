@@ -14,7 +14,10 @@ window.addEventListener("load", async () => {
 async function loadCheckoutData() {
     try {
         const response = await fetch("api/checkout/load-checkout-data");
-
+        if (response.redirected) {
+            window.location = "sign-in.html";
+            return;
+        }
         if (!response.ok) {
             if (response.status === 401) {
                 window.location = "sign-in.html";
@@ -95,13 +98,13 @@ async function loadCheckoutData() {
                 let item_sub_total = Number(cart.qty) * Number(cart.price);
 
                 st_item_tr_clone.querySelector("#st-product-price").textContent =
-                    new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(item_sub_total);
+                    new Intl.NumberFormat("en-US", {minimumFractionDigits: 2}).format(item_sub_total);
                 st_tbody.appendChild(st_item_tr_clone);
                 total += item_sub_total;
             });
 
             st_subtotal_tr.querySelector("#st-product-total-amount").textContent =
-                new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(total);
+                new Intl.NumberFormat("en-US", {minimumFractionDigits: 2}).format(total);
             st_tbody.appendChild(st_subtotal_tr);
 
             // shipping logic
@@ -115,11 +118,11 @@ async function loadCheckoutData() {
                 }
 
                 st_order_shipping_tr.querySelector("#st-product-shipping-charges").textContent =
-                    new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(shipping_charges);
+                    new Intl.NumberFormat("en-US", {minimumFractionDigits: 2}).format(shipping_charges);
                 st_tbody.appendChild(st_order_shipping_tr);
 
                 st_order_total_tr.querySelector("#st-order-total-amount").textContent =
-                    new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(shipping_charges + total);
+                    new Intl.NumberFormat("en-US", {minimumFractionDigits: 2}).format(shipping_charges + total);
                 st_tbody.appendChild(st_order_total_tr);
             });
 
@@ -171,12 +174,12 @@ async function checkout() {
         const data = await response.json();
         if (data.status) {
             console.log("Checkout success:", data);
-            Notiflix.Notify.success("Checkout success:", data.message, { position: 'center-top' });
+            Notiflix.Notify.success("Checkout success:", data.message, {position: 'center-top'});
             // PayHere payment
         } else {
-            Notiflix.Notify.failure(data.message || "Checkout failed", { position: 'center-top' });
+            Notiflix.Notify.failure(data.message || "Checkout failed", {position: 'center-top'});
         }
     } catch (error) {
-        Notiflix.Notify.failure("Something went wrong. Please try again.", { position: 'center-top' });
+        Notiflix.Notify.failure("Something went wrong. Please try again.", {position: 'center-top'});
     }
 }

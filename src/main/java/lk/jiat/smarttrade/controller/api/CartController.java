@@ -33,7 +33,7 @@ public class CartController {
         return Response.ok().entity(responseJson).build();
     }
 
-    @GET // ✅ Changed from @DELETE
+    @GET // Changed from @DELETE
     @Path("/remove")
     @Produces(MediaType.APPLICATION_JSON)
     public Response removeCartItem(@QueryParam("cartItemId") int cartId, @Context HttpServletRequest request) {
