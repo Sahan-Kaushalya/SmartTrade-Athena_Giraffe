@@ -30,7 +30,6 @@ public class CheckoutController {
     public Response processCheckout(String jsonData, @Context HttpServletRequest request) {
         CheckoutRequestDTO checkoutDTO = AppUtil.GSON.fromJson(jsonData, CheckoutRequestDTO.class);
         String responseJson = new CheckoutService().processCheckout(checkoutDTO, request);
-
         return Response.ok().entity(responseJson).build();
     }
 }
