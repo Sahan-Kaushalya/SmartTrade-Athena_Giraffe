@@ -7,4 +7,5 @@ public class Validator {
     public static final String VERIFICATION_CODE_VALIDATION = "\\d{6}"; // ^[0-9]{6}$
     public static final String POSTAL_CODE_VALIDATION = "\\d{5}"; // ^[0-9]{6}$
     public static final String IS_INTEGER = "^\\d+$";
+    public static final String NON_DIGIT_PATTERN = "\\D+"; // retrieve integer value from order id (#00025 -> 25)
 }
