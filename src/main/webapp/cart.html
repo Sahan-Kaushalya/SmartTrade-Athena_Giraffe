@@ -29,10 +29,11 @@
     <link rel="stylesheet" href="assets/css/notification.css">
     <script src="assets/js/header.js"></script>
     <script src="assets/js/footer.js"></script>
+
 </head>
 
 
-<body class="sticky-header">
+<body class="sticky-header" id="cart-body">
 <!--[if lte IE 9]>
 <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade
     your browser</a> to improve your experience and security.</p>
@@ -98,12 +99,12 @@
                                     <tbody>
                                     <tr class="order-subtotal">
                                         <td>Quantities</td>
-                                        <td class="order-total-amount" id="order-total-quantity">1</td>
+                                        <td class="order-total-amount" id="order-total-quantity">0</td>
                                     </tr>
                                     <tr class="order-total">
                                         <td>Total</td>
                                         <td class="order-total-amount">Rs. <span
-                                                id="order-total-amount">100,000.00</span></td>
+                                                id="order-total-amount">0</span></td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -202,7 +203,11 @@
 <script src="assets/js/notification.js"></script>
 <script src="assets/js/notiflix-aio-3.2.8.min.js"></script>
 <script src="assets/js/cart.js"></script>
-
+<script>
+    window.addEventListener("load", async () => {
+        await loadCartItems();
+    })
+</script>
 </body>
 
 </html>

@@ -15,7 +15,8 @@ import java.util.List;
 
 public class ContentService {
     private static final int FIRST_RESULT = 0;
-    private static final int MAX_RESULT = 6;
+    private static final int MAX_RESULT = 10;
+
     public String loadProductData() {
         JsonObject responseObject = new JsonObject();
         Session hibernateSession = HibernateUtil.getSessionFactory().openSession();
@@ -40,15 +41,15 @@ public class ContentService {
                 .setParameter("value", String.valueOf(Status.Type.APPROVED))
                 .uniqueResult();
         Query<Stock> query = hibernateSession.createQuery("FROM Stock s WHERE s.status =:status ORDER BY s.id DESC", Stock.class)
-                .setParameter("status",approvedStatus);
+                .setParameter("status", approvedStatus);
         // get product count
-        responseObject.addProperty("allProductCount",query.getResultList().size());
+        responseObject.addProperty("allProductCount", query.getResultList().size());
         // filter product
         query.setFirstResult(ContentService.FIRST_RESULT);
         query.setMaxResults(ContentService.MAX_RESULT);
         List<Stock> stockList = query.getResultList();
         List<ProductDTO> productList = new ArrayList<>();
-        for(Stock s:stockList){
+        for (Stock s : stockList) {
             ProductDTO productDTO = new ProductDTO();
             productDTO.setProductId(s.getProduct().getId());
             productDTO.setTitle(s.getProduct().getTitle());
@@ -59,13 +60,13 @@ public class ContentService {
         hibernateSession.close();
 
         // attach results to the response object
-        responseObject.add("brandList",AppUtil.GSON.toJsonTree(brandList));
-        responseObject.add("qualityList",AppUtil.GSON.toJsonTree(qualityList));
-        responseObject.add("colorList",AppUtil.GSON.toJsonTree(colorList));
-        responseObject.add("storageList",AppUtil.GSON.toJsonTree(storageList));
-        responseObject.add("productList",AppUtil.GSON.toJsonTree(productList));
-        responseObject.addProperty("minPrice",minPrice);
-        responseObject.addProperty("maxPrice",maxPrice);
+        responseObject.add("brandList", AppUtil.GSON.toJsonTree(brandList));
+        responseObject.add("qualityList", AppUtil.GSON.toJsonTree(qualityList));
+        responseObject.add("colorList", AppUtil.GSON.toJsonTree(colorList));
+        responseObject.add("storageList", AppUtil.GSON.toJsonTree(storageList));
+        responseObject.add("productList", AppUtil.GSON.toJsonTree(productList));
+        responseObject.addProperty("minPrice", minPrice);
+        responseObject.addProperty("maxPrice", maxPrice);
 
         return AppUtil.GSON.toJson(responseObject);
     }
@@ -73,27 +74,21 @@ public class ContentService {
     public String loadNewArrivalProducts() {
         JsonObject responseObject = new JsonObject();
         Session hibernateSession = HibernateUtil.getSessionFactory().openSession();
-        List<Product> productList = hibernateSession.createQuery("FROM Product p ORDER BY p.createdAt DESC", Product.class)
-                .setMaxResults(10)
-                .getResultList();
         List<ProductDTO> productDTOList = new ArrayList<>();
-        for (Product product : productList) {
+        List<Stock> stockList = hibernateSession.createQuery("FROM Stock s ORDER BY s.createdAt DESC", Stock.class)
+                .setMaxResults(ContentService.MAX_RESULT)
+                .getResultList();
+        for(Stock stock :stockList){
+            Product product = stock.getProduct();
             ProductDTO productDTO = new ProductDTO();
             productDTO.setProductId(product.getId());
             productDTO.setTitle(product.getTitle());
             productDTO.setColorId(product.getColor().getId());
             productDTO.setColorValue(product.getColor().getValue());
             productDTO.setImages(product.getImages());
-            List<StockDTO> stockDTOList = new ArrayList<>();
-            for (Stock stock : product.getStocks()) {
-                StockDTO stockDTO = new StockDTO();
-                stockDTO.setProductId(product.getId());
-                stockDTO.setStockId(stock.getId());
-                stockDTO.setQty(stock.getQty());
-                stockDTO.setPrice(stock.getPrice());
-                stockDTOList.add(stockDTO);
-            }
-            productDTO.setStockDTOList(stockDTOList);
+            productDTO.setStockId(stock.getId());
+            productDTO.setQty(stock.getQty());
+            productDTO.setPrice(stock.getPrice());
             productDTOList.add(productDTO);
         }
         hibernateSession.close();

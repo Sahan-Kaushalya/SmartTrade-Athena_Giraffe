@@ -23,35 +23,6 @@ import java.util.List;
 
 @Path("/products")
 public class ProductController {
-    @Path("/advanced-search")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response loadAdvancedSearchData(String requestData) {
-        JsonObject requestObject = AppUtil.GSON.fromJson(requestData, JsonObject.class);
-        String responseJson = new ProductService().loadAdvancedSearchData(requestObject);
-        return Response.ok().entity(responseJson).build();
-    }
-
-    @Path("/similar-products")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response loadSimilarProducts(@QueryParam("productId") int id) {
-        String responseJson = new ProductService().getSimilarProducts(id);
-        return Response.ok().entity(responseJson).build();
-    }
-
-    @Path("/single-product")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    // Fetch product id from request
-    // .../single-product?productId=1
-    public Response loadSingleProduct(@QueryParam("productId") int id) {
-        String responseJson = new ProductService().getSingleProduct(id);
-        return Response.ok().entity(responseJson).build();
-    }
-
-
     @Path("/all")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

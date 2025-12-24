@@ -34,11 +34,11 @@ function renderingNewArrivals(productList) {
     const newArrivalProductContainer = document.getElementById("new-arrival-product-container");
     newArrivalProductContainer.innerHTML = "";
     productList.forEach((product) => {
-        product.stockDTOList.forEach((stock) => {
+
             newArrivalProductContainer.innerHTML += `<div class="col-xl-3 col-lg-4 col-sm-6 col-12 mb--30">
                             <div class="axil-product product-style-one">
                                 <div class="thumbnail">
-                                    <a href="single-product.html?productId=${product.productId}">
+                                    <a href="single-product.html?productId=${product.stockId}">
                                         <img data-sal="zoom-out" data-sal-delay="200" data-sal-duration="800"
                                              loading="lazy" class="main-img" src="${product.images[0]}"
                                              alt="Product Images">
@@ -48,8 +48,8 @@ function renderingNewArrivals(productList) {
 
                                     <div class="product-hover-action">
                                         <ul class="cart-action">
-                                            <li class="quickview"><a href="single-product.html?productId=${product.productId}"><i class="far fa-eye"></i></a></li>
-                                            <li class="select-option"><a onclick="addToCart(${product.productId},1);">Add To Cart</a></li>
+                                            <li class="quickview"><a href="single-product.html?productId=${product.stockId}"><i class="far fa-eye"></i></a></li>
+                                            <li class="select-option"><a onclick="addToCart(${product.stockId},1);">Add To Cart</a></li>
                                             <li class="wishlist"><a href="#"><i class="far fa-heart"></i></a></li>
                                         </ul>
                                     </div>
@@ -61,7 +61,7 @@ function renderingNewArrivals(productList) {
                                             <span class="price current-price">Rs. ${
                 new Intl.NumberFormat("en-US", {
                     minimumFractionDigits: 2,
-                }).format(stock.price)
+                }).format(product.price)
             }</span>
                                         </div>
                                         <div class="color-variant-wrapper">
@@ -77,7 +77,7 @@ function renderingNewArrivals(productList) {
                                 </div>
                             </div>
                         </div>`;
-        });
+
     });
 
     refreshAnimations();

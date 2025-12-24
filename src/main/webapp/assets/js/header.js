@@ -101,7 +101,7 @@ class HeaderContent extends HTMLElement{
                         </a>
                     </li>
                     <li class="shopping-cart">
-                        <a href="#" class="cart-dropdown-btn">
+                        <a onclick="loadCartItems();" class="cart-dropdown-btn">
                             <span class="cart-count" id="cart-count">0</span>
                             <i class="flaticon-shopping-cart"></i>
                         </a>

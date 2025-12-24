@@ -21,6 +21,24 @@ public class ProductDTO implements Serializable {
     private int qty;
     private List<StockDTO> stockDTOList;
     private List<String> images;
+    private int stockId;
+    private String createdAt;
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public int getStockId() {
+        return stockId;
+    }
+
+    public void setStockId(int stockId) {
+        this.stockId = stockId;
+    }
 
     public List<String> getImages() {
         return images;
