@@ -29,6 +29,7 @@
         <mapping class="lk.jiat.smarttrade.entity.Discount"/>
         <mapping class="lk.jiat.smarttrade.entity.Stock"/>
         <mapping class="lk.jiat.smarttrade.entity.Cart"/>
+        <mapping class="lk.jiat.smarttrade.entity.Delivery"/>
 
     </session-factory>
 </hibernate-configuration>

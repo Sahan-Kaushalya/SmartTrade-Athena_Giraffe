@@ -2,7 +2,9 @@ package lk.jiat.smarttrade.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -13,10 +15,6 @@ public class Order extends BaseEntity {
     private int id;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "delivery_types_id")
-    private DeliveryType deliveryType;
-
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "status_id")
     private Status status;
 
@@ -25,9 +23,9 @@ public class Order extends BaseEntity {
     private User user;
 
     @OneToMany(mappedBy = "order")
-    private Set<OrderItem> orderItems = new HashSet<>();
+    private List<OrderItem> orderItems = new ArrayList<>();
 
-    public Set<OrderItem> getOrderItems() {
+    public List<OrderItem> getOrderItems() {
         return orderItems;
     }
 
@@ -39,13 +37,6 @@ public class Order extends BaseEntity {
         this.id = id;
     }
 
-    public DeliveryType getDeliveryType() {
-        return deliveryType;
-    }
-
-    public void setDeliveryType(DeliveryType deliveryType) {
-        this.deliveryType = deliveryType;
-    }
 
     public Status getStatus() {
         return status;

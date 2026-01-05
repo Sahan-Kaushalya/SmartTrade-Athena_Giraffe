@@ -80,7 +80,6 @@ function makeOrderSummary(data) {
         minimumFractionDigits: 2
     }).format(total);
 
-
     let citySelect = document.getElementById("city-select");
     citySelect.addEventListener("change", () => {
         let shippingCharges = 0;
@@ -124,6 +123,8 @@ function fillUserCurrentAddress(address) {
             lineTwo.value = address.lineTwo;
             postalCode.value = address.postalCode;
             mobile.value = address.mobile;
+            city.disabled = true;
+            city.dispatchEvent(new Event("change"));
         } else {
             firstName.value = "";
             lastName.value = "";
@@ -132,6 +133,8 @@ function fillUserCurrentAddress(address) {
             lineTwo.value = "";
             postalCode.value = "";
             mobile.value = "";
+            city.disabled = false;
+            city.dispatchEvent(new Event("change"));
         }
     });
 }
@@ -151,6 +154,107 @@ async function loadCities() {
             })
         } else {
             Notiflix.Notify.failure("City data loading failed!", {
+                position: 'center-top'
+            });
+        }
+    } catch (e) {
+        Notiflix.Notify.failure(e.message, {
+            position: 'center-top'
+        });
+    }
+}
+
+async function checkout() {
+    let firstName = document.getElementById("first-name");
+    let lastName = document.getElementById("last-name");
+    let city = document.getElementById("city-select");
+    let lineOne = document.getElementById("line-one");
+    let lineTwo = document.getElementById("line-two");
+    let postalCode = document.getElementById("postal-code");
+    let mobile = document.getElementById("mobile");
+    let currentAddressTick = document.getElementById("checkbox1");
+
+    const checkoutData = {
+        isCurrentAddress: currentAddressTick.checked,
+        firstName: firstName.value,
+        lastName: lastName.value,
+        cityId: city.value,
+        lineOne: lineOne.value,
+        lineTwo: lineTwo.value,
+        postalCode: postalCode.value,
+        mobile: mobile.value,
+    }
+    const checkoutDataJSON = JSON.stringify(checkoutData);
+
+    try {
+        Notiflix.Loading.pulse("Wait...", {
+            clickToClose: false,
+            svgColor: '#0284c7'
+        });
+
+        const response = await fetch("api/checkouts/user-checkout", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: checkoutDataJSON
+        })
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status) {
+                // console.log(data);
+                payhere.startPayment(data.paymentDetails);
+            } else {
+                Notiflix.Notify.failure(data.message, {
+                    position: 'center-top'
+                });
+            }
+        } else {
+            Notiflix.Notify.failure("Checkout process failed!", {
+                position: 'center-top'
+            });
+        }
+    } catch (e) {
+        Notiflix.Notify.failure(e.message, {
+            position: 'center-top'
+        });
+    } finally {
+        Notiflix.Loading.remove();
+    }
+}
+
+// Payment completed. It can be a successful failure.
+payhere.onCompleted = async function onCompleted(orderId) {
+    console.log("Payment completed. OrderID:" + orderId);
+    // Note: validate the payment and show success or failure page to the customer
+    await verifyOrder(orderId);
+};
+
+// Payment window closed
+payhere.onDismissed = function onDismissed() {
+    // Note: Prompt user to pay again or show an error page
+    console.log("Payment dismissed");
+};
+
+// Error occurred
+payhere.onError = function onError(error) {
+    // Note: show an error page
+    console.log("Error:" + error);
+};
+
+async function verifyOrder(orderId) {
+    try {
+        const response = await fetch(`api/orders/verify-order?orderId=${orderId}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status) {
+                window.location = `invoice.html?orderId=${orderId}`;
+            } else {
+                // redirect to failed page
+            }
+
+        } else {
+            Notiflix.Notify.failure("Order verifying failed!", {
                 position: 'center-top'
             });
         }

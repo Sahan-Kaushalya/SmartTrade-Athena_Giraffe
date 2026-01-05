@@ -5,6 +5,7 @@ import lk.jiat.smarttrade.mail.VerificationMail;
 import lk.jiat.smarttrade.provider.MailServiceProvider;
 import lk.jiat.smarttrade.util.AppUtil;
 import lk.jiat.smarttrade.util.HibernateUtil;
+import lk.jiat.smarttrade.util.PayHereUtil;
 import lk.jiat.smarttrade.validation.Validator;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -14,12 +15,13 @@ import java.util.ArrayList;
 
 public class Test {
     public static void main(String[] args) {
+//        System.out.println(PayHereUtil.generateHash("#0001",1500));
 //
 //        MailServiceProvider.getInstance().start();
 //        VerificationMail verificationMail = new VerificationMail("anjana.jiat@gmail.com", "123456");
 //        MailServiceProvider.getInstance().sendMail(verificationMail);
 
-//        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 //        String s = AppUtil.generateCode();
 //        System.out.println(s);
 //        try (Session s = HibernateUtil.getSessionFactory().openSession()) {
@@ -29,9 +31,9 @@ public class Test {
 //
 //
 //        }
-        String orderCode = "Order25";
-
-        int orderId = Integer.parseInt(orderCode.replaceAll(Validator.NON_DIGIT_PATTERN, ""));
-        System.out.println(orderId);
+//        String orderCode = "Order25";
+//
+//        int orderId = Integer.parseInt(orderCode.replaceAll(Validator.NON_DIGIT_PATTERN, ""));
+//        System.out.println(orderId);
     }
 }
