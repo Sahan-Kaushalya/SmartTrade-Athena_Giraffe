@@ -1,6 +1,6 @@
-class FooterContent extends HTMLElement{
-    connectedCallback(){
-        this.innerHTML=
+class FooterContent extends HTMLElement {
+    connectedCallback() {
+        this.innerHTML =
             `<!-- Start Footer Top Area  -->
 <div class="footer-top separator-top">
     <div class="container">
@@ -115,37 +115,21 @@ class FooterContent extends HTMLElement{
     <button class="card-close sidebar-close"><i class="fas fa-times"></i></button>
     <div class="header-search-wrap">
         <div class="card-header">
-            <form action="#">
+<!--            <form action="#">-->
                 <div class="input-group">
-                    <input type="search" class="form-control" name="prod-search" id="prod-search" placeholder="Search">
+                    <input type="search" class="form-control" name="prod-search" id="prod-search" placeholder="Search" 
+                    onkeyup="basicSearch(event);">
                     <button type="submit" class="axil-btn btn-bg-primary"><i class="far fa-search"></i></button>
                 </div>
-            </form>
+<!--            </form>-->
         </div>
         <div class="card-body">
             <div class="search-result-header">
-                <h6 class="title">1 Result Found</h6>
-                <a href="#" class="view-all">View All</a>
+                <h6 class="title"><strong id="result-count">0</strong> Result Found</h6>
+                <a href="search.html" class="view-all">View All</a>
             </div>
-            <div class="psearch-results">
-                <div class="axil-product-list">
-                    <div class="thumbnail">
-                        <a href="#">
-                            <img src="./assets/images/product/product-03.png" alt="Product Image-1">
-                        </a>
-                    </div>
-                    <div class="product-content">
-
-                        <h6 class="product-title"><a href="#">Product Title-1</a></h6>
-                        <div class="product-price-variant">
-                            <span class="price current-price">Rs. 0.00</span>
-                        </div>
-                        <div class="product-cart">
-                            <a href="#" class="cart-btn"><i class="fal fa-shopping-cart"></i></a>
-                            <a href="#" class="cart-btn"><i class="fal fa-heart"></i></a>
-                        </div>
-                    </div>
-                </div>
+            <div class="psearch-results" id="basic-search-results">
+                
             </div>
         </div>
     </div>
@@ -180,4 +164,62 @@ class FooterContent extends HTMLElement{
 <div class="closeMask"></div>`;
     }
 }
-customElements.define("footer-content",FooterContent);
+
+customElements.define("footer-content", FooterContent);
+
+
+async function basicSearch(event) {
+    let searchInput = document.getElementById("prod-search");
+    if (event.code === "Enter") {
+        try {
+            Notiflix.Loading.pulse("Wait...", {
+                clickToClose: false,
+                svgColor: '#0284c7'
+            });
+
+            const response = await fetch(`api/products/basic-search?title=${searchInput.value}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status) {
+                    const searchData = data.basicSearchData;
+                    document.getElementById("result-count").innerHTML = searchData.length;
+                    searchData.forEach((item) => {
+                        document.getElementById("basic-search-results").innerHTML += `<div class="axil-product-list">
+                    <div class="thumbnail">
+                        <a href="single-product.html?productId=${item.stockId}">
+                            <img src="${item.image}" alt="Product Image-1">
+                        </a>
+                    </div>
+                    <div class="product-content">
+                        <h6 class="product-title"><a href="#">${item.title}</a></h6>
+                        <div class="product-price-variant">
+                            <span class="price current-price">Rs. ${new Intl.NumberFormat("en-US", {minimumFractionDigits: 2})
+                            .format(item.price)}</span>
+                        </div>
+                        <div class="product-cart">
+                            <a class="cart-btn" onclick="addToCart(${item.stockId},1)"><i class="fal fa-shopping-cart"></i></a>
+                            <a href="#" class="cart-btn"><i class="fal fa-heart"></i></a>
+                        </div>
+                    </div>
+                </div>`;
+                    });
+                } else {
+                    Notiflix.Notify.failure(data.message, {
+                        position: 'center-top'
+                    });
+                }
+            } else {
+                Notiflix.Notify.failure("Product searching failed!", {
+                    position: 'center-top'
+                });
+            }
+
+        } catch (e) {
+            Notiflix.Notify.failure(e.message, {
+                position: 'center-top'
+            });
+        } finally {
+            Notiflix.Loading.remove();
+        }
+    }
+}

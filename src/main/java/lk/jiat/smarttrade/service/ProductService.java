@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.core.Context;
 import lk.jiat.smarttrade.dto.ProductDTO;
+import lk.jiat.smarttrade.dto.SearchResponseDTO;
 import lk.jiat.smarttrade.dto.StockDTO;
 import lk.jiat.smarttrade.entity.*;
 import lk.jiat.smarttrade.util.AppUtil;
@@ -23,8 +24,42 @@ import java.util.*;
 
 public class ProductService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy MMMM dd");
-    private static final int MAX_RESULT = 6;
 
+    public String getBasicSearchData(String title) {
+        JsonObject responseObject = new JsonObject();
+        boolean status = false;
+        String message = "";
+        if (!title.isBlank()) {
+            Session hibernateSession = HibernateUtil.getSessionFactory().openSession();
+
+            Status approvedStatus = hibernateSession.createNamedQuery("Status.findByValue", Status.class)
+                    .setParameter("value", String.valueOf(Status.Type.APPROVED)).getSingleResult();
+
+            List<Stock> stockList = hibernateSession.createQuery("FROM Stock s WHERE s.product.title LIKE :title AND s.status=:status", Stock.class)
+                    .setParameter("title", "%" + title + "%")
+                    .setParameter("status", approvedStatus)
+                    .getResultList();
+            if (stockList.isEmpty()) {
+                message = "Product not found!";
+            } else {
+                List<SearchResponseDTO> searchResponseDTOS = new ArrayList<>();
+                for (Stock stock : stockList) {
+                    SearchResponseDTO dto = new SearchResponseDTO();
+                    dto.setStockId(stock.getId());
+                    dto.setTitle(stock.getProduct().getTitle());
+                    dto.setPrice(stock.getPrice());
+                    dto.setImage(stock.getProduct().getImages().get(0));
+                    searchResponseDTOS.add(dto);
+                }
+                responseObject.add("basicSearchData", AppUtil.GSON.toJsonTree(searchResponseDTOS));
+                status = true;
+            }
+            hibernateSession.close();
+        }
+        responseObject.addProperty("status", status);
+        responseObject.addProperty("message", message);
+        return AppUtil.GSON.toJson(responseObject);
+    }
 
     public String getAllUserProducts(@Context HttpServletRequest request) {
         JsonObject responseObject = new JsonObject();
