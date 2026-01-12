@@ -23,6 +23,8 @@ public class MailServiceProvider {
         properties.put("mail.smtp.starttls.enable", true);
         properties.put("mail.smtp.host", Env.get("mail.host"));
         properties.put("mail.smtp.port", Env.get("mail.port"));
+        // additional property for gmail
+        properties.put("mail.smtp.ssl.trust", Env.get("mail.host"));
     }
 
     public static MailServiceProvider getInstance() {
@@ -59,7 +61,7 @@ public class MailServiceProvider {
         }
     }
 
-    public void sendMail(Mailable mailable){
+    public void sendMail(Mailable mailable) {
         boolean offer = blockingQueue.offer(mailable);
     }
 }

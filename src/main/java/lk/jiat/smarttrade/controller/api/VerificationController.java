@@ -8,7 +8,7 @@ import lk.jiat.smarttrade.annotation.IsUser;
 import lk.jiat.smarttrade.dto.UserDTO;
 import lk.jiat.smarttrade.service.UserService;
 
-@IsUser
+
 @Path("/verify-accounts")
 public class VerificationController {
     @POST
