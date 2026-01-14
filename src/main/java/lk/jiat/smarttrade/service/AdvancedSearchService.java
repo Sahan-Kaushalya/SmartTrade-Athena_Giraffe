@@ -5,6 +5,7 @@ import lk.jiat.smarttrade.dto.ProductDTO;
 import lk.jiat.smarttrade.entity.*;
 import lk.jiat.smarttrade.util.AppUtil;
 import lk.jiat.smarttrade.util.HibernateUtil;
+import lk.jiat.smarttrade.validation.Validator;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -14,6 +15,39 @@ import java.util.List;
 import java.util.Map;
 
 public class AdvancedSearchService {
+    public String getBrandSearchData(String brId, String brandName) {
+        JsonObject responseObject = new JsonObject();
+        boolean status = false;
+        String message = "";
+
+        if (brId != null && brandName != null) {
+            if (!brId.matches(Validator.IS_INTEGER)) {
+                message = "Invalid brand id!";
+            } else if (brandName.isEmpty()) {
+                message = "Brand name can not be empty!";
+            } else {
+                int brandId = Integer.parseInt(brId);
+                Session hibernateSession = HibernateUtil.getSessionFactory().openSession();
+                Brand brand = hibernateSession.find(Brand.class, brandId);
+                Status approvedStatus = hibernateSession.createNamedQuery("Status.findByValue", Status.class)
+                        .setParameter("value", String.valueOf(Status.Type.APPROVED))
+                        .getSingleResult();
+                Query<Stock> stockQuery = hibernateSession.createQuery("FROM Stock s WHERE s.product.model.brand=:brand AND s.status=:status", Stock.class)
+                        .setParameter("brand", brand)
+                        .setParameter("status", approvedStatus);
+                responseObject.addProperty("allProductCount",stockQuery.getResultList().size());
+                List<ProductDTO> productDTOList = generateProductDTO(stockQuery);
+                responseObject.add("productList", AppUtil.GSON.toJsonTree(productDTOList));
+                status=true;
+                hibernateSession.close();
+            }
+        }
+
+        responseObject.addProperty("status", status);
+        responseObject.addProperty("message", message);
+        return AppUtil.GSON.toJson(responseObject);
+    }
+
     public String getAdvancedSearchData(JsonObject requestObject) {
         JsonObject responseObject = new JsonObject();
         boolean status = false;
@@ -87,7 +121,7 @@ public class AdvancedSearchService {
             query.setMaxResults(AppUtil.MAX_RESULT_VALUE);
         }
 
-        List<ProductDTO> productDTOList = generateProductDTO(hibernateSession, query);
+        List<ProductDTO> productDTOList = generateProductDTO(query);
         responseObject.add("productList", AppUtil.GSON.toJsonTree(productDTOList));
 
         String countHql = hql.toString().replace("SELECT s", "SELECT COUNT(s) ");
@@ -137,7 +171,7 @@ public class AdvancedSearchService {
         // get stock list
         stockQuery.setFirstResult(AppUtil.FIRST_RESULT_VALUE);
         stockQuery.setMaxResults(AppUtil.MAX_RESULT_VALUE); // Getting stocks from 0 to 10
-        List<ProductDTO> productDTOList = generateProductDTO(hibernateSession, stockQuery);
+        List<ProductDTO> productDTOList = generateProductDTO(stockQuery);
 
         // attach value to response object
         responseObject.add("brandList", AppUtil.GSON.toJsonTree(brandList));
@@ -156,7 +190,7 @@ public class AdvancedSearchService {
         return AppUtil.GSON.toJson(responseObject);
     }
 
-    private List<ProductDTO> generateProductDTO(Session hibernateSession, Query<Stock> stockQuery) {
+    private List<ProductDTO> generateProductDTO(Query<Stock> stockQuery) {
         List<Stock> stockList = stockQuery.getResultList(); // return 10 stocks
 
         List<ProductDTO> productDTOList = new ArrayList<>();

@@ -11,6 +11,14 @@ import lk.jiat.smarttrade.util.AppUtil;
 public class AdvancedSearchController {
     private final AdvancedSearchService advancedSearchService = new AdvancedSearchService();
 
+    @Path("/get-by-brand")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response loadBrandSearchData(@QueryParam("brId")String brId, @QueryParam("brName")String brName){
+        String responseJson = advancedSearchService.getBrandSearchData(brId, brName);
+        return Response.ok().entity(responseJson).build();
+    }
+
     @Path("/search-data")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

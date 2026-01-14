@@ -4,11 +4,45 @@ window.addEventListener("load", async () => {
             clickToClose: false,
             svgColor: '#0284c7'
         });
-        await loadAdvancedSearchData();
+        await searchProductByBrand();
     } finally {
         Notiflix.Loading.remove();
     }
 });
+
+
+// brand searching part
+async function searchProductByBrand() {
+    const params = new URLSearchParams(window.location.search);
+    const brandId = params.get("brand");
+    const brandName = params.get("name");
+    if (brandId && brandName) {
+        try {
+            const response = await fetch(`api/advanced-search/get-by-brand?brId=${brandId}&brName=${brandName}`)
+            if(response.ok){
+                const data = await response.json();
+                if(data.status){
+                    updateProductView(data);
+                }else {
+                    Notiflix.Notify.failure(data.message, {
+                        position: 'center-top'
+                    });
+                }
+            }else{
+                Notiflix.Notify.failure("Product data loading failed!", {
+                    position: 'center-top'
+                });
+            }
+        } catch (e) {
+            Notiflix.Notify.failure(e.message, {
+                position: 'center-top'
+            });
+        }
+
+    }else{
+        await loadAdvancedSearchData();
+    }
+}
 
 async function loadAdvancedSearchData() {
     try {
@@ -182,14 +216,14 @@ async function searchProduct(firstResult) {
         const stSort = document.getElementById("st-sort").value;
 
         const searchData = {
-            firstResult:firstResult,
-            brandName:brandName,
-            conditionValue:conditionValue,
-            colorValue:colorValue,
-            storageValue:storageValue,
-            priceStart:priceStart,
-            priceEnd:priceEnd,
-            sortValue:stSort
+            firstResult: firstResult,
+            brandName: brandName,
+            conditionValue: conditionValue,
+            colorValue: colorValue,
+            storageValue: storageValue,
+            priceStart: priceStart,
+            priceEnd: priceEnd,
+            sortValue: stSort
         };
 
         const searchDataJson = JSON.stringify(searchData);
@@ -199,7 +233,7 @@ async function searchProduct(firstResult) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body:searchDataJson
+            body: searchDataJson
         })
         if (response.ok) {
             const data = await response.json();
